@@ -1,4 +1,3 @@
-// main.cpp
 #include <windows.h>
 #include <gdiplus.h>
 #include <vector>
@@ -20,7 +19,7 @@ int flipflop=0;
 
 void DrawWinda(Graphics& g)
 {
-    SolidBrush windaBrush(Color(150, 150, 255));
+    SolidBrush windaBrush(Color(128, 128, 128));
     SolidBrush pasazerBrush(Color(0, 180, 0));
     SolidBrush czekaBrush(Color(255, 100, 100));
     SolidBrush dojechalBrush(Color(100, 100, 255));
@@ -30,8 +29,7 @@ void DrawWinda(Graphics& g)
     SolidBrush tekstBrush(Color(0, 0, 0));
     Pen pen(Color(0, 0, 0));
 
-    // Rozmiary
-    int marginY = 300; // piêtro 0
+    int marginY = 300;
     int wysokoscPietro = 50;
     int szerokoscWindy = 125;
     int wysokoscWindy = 50;
@@ -43,21 +41,17 @@ void DrawWinda(Graphics& g)
     int dojechaliX = windaX + szerokoscWindy + 30;
  
 
-    // Waga
     wstring wagaStr = L"Waga: " + to_wstring(winda.waga) + L" kg";
     g.DrawString(wagaStr.c_str(), -1, &font, PointF(marginX, 10), &tekstBrush);
 
     for (int f = 0; f < 5; ++f) {
         int fy = marginY - f * wysokoscPietro;
 
-        // Linia pozioma pietra
         g.DrawLine(&pen, marginX, fy, dojechaliX + 100, fy);
 
-        // Nazwa pietra
         wstring pietroText = L"Pietro " + to_wstring(f);
         g.DrawString(pietroText.c_str(), -1, &font, PointF(marginX, fy - wysokoscPietro + 5), &tekstBrush);
 
-        // Pasazerowie - czeka
         int count = 0;
         for (const Pasazer& p : pasazerowie) {
             if (p.stan == czeka && p.pietroStart == f) {
@@ -68,7 +62,6 @@ void DrawWinda(Graphics& g)
             }
         }
 
-        // Pasazerowie - dojechali
         count = 0;
         for (const Pasazer& p : pasazerowie) {
             if (p.stan == dojechal && p.pietroKoniec == f) {
@@ -80,11 +73,9 @@ void DrawWinda(Graphics& g)
         }
     }
 
-    // Winda
     int wy = marginY - ((winda.pietro + 1) * wysokoscPietro);
     g.FillRectangle(&windaBrush, windaX, wy, szerokoscWindy, wysokoscWindy);
 
-    // Pasazerowie - jedzie
     int i = 0;
     for (auto* p : winda.vectorPasazerow) {
         int px = windaX + 5 + (i % 8) * (szerokoscPasazer + 5);
@@ -102,7 +93,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_CREATE:
-        SetTimer(hWnd, 1, 250, NULL);
+        SetTimer(hWnd, 1, 500, NULL);
 
         for (int start = 0; start < 5; ++start) {
             for (int cel = 0; cel < 5; ++cel) {
@@ -127,13 +118,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             int floor = (btnId - BUTTON_ID_BASE) / 10;
             int cel = (btnId - BUTTON_ID_BASE) % 10;
             pasazerowieDoDodania.push_back(Pasazer(floor, cel));
-
-            ////if (!((/*floor==winda.pietro - 1||*/ floor == winda.pietro + 1 || floor == winda.pietro) && winda.kierunek==gora)){
-            //    //if (!((floor == winda.pietro - 1 /*|| floor == winda.pietro + 1*/ || floor == winda.pietro) && winda.kierunek == dol)) {
-            //         pasazerowie.push_back(Pasazer(floor, cel));
-            //    //}
-
-            ////}
             InvalidateRect(hWnd, NULL, FALSE);
         }
         return 0;
