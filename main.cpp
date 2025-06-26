@@ -14,65 +14,88 @@ using namespace std;
 Winda winda;
 vector<Pasazer> pasazerowie;
 
+
+
 void DrawWinda(Graphics& g)
 {
     SolidBrush windaBrush(Color(150, 150, 255));
     SolidBrush pasazerBrush(Color(0, 180, 0));
-    SolidBrush waitingBrush(Color(255, 100, 100));
+    SolidBrush czekaBrush(Color(255, 100, 100));
+    SolidBrush dojechalBrush(Color(100, 100, 255));
+
     FontFamily fontFamily(L"Arial");
     Font font(&fontFamily, 12, FontStyleRegular, UnitPixel);
-    SolidBrush textBrush(Color(0, 0, 0));
+    SolidBrush tekstBrush(Color(0, 0, 0));
+    Pen pen(Color(0, 0, 0));
 
-    int baseX = 50; // winda z lewej
-    int baseY = 400; // piêtro 0
-    int floorHeight = 60;
-    int width = 50;
-    int height = 50;
+    // Rozmiary
+
+
+    int marginY = 300; // piêtro 0
+    int wysokoscPietro = 50;
+    int szerokoscWindy = 125;
+    int wysokoscWindy = 50;
+    int szerokoscPasazer = 10;
+    int wysokoscPasazer = 20;
+    int marginX = 50;
+    int czekajacyX = marginX + 80;
+    int windaX = czekajacyX + 100;
+    int dojechaliX = windaX + szerokoscWindy + 30;
+ 
+    
 
     // Waga
     wstring wagaStr = L"Waga: " + to_wstring(winda.waga) + L" kg";
-    g.DrawString(wagaStr.c_str(), -1, &font, PointF(10, 10), &textBrush);
+    g.DrawString(wagaStr.c_str(), -1, &font, PointF(marginX, 10), &tekstBrush);
 
-    // Rysuj windê
-    int wy = baseY - ((winda.pietro+1) * floorHeight);
-    g.FillRectangle(&windaBrush, baseX, wy, width, height);
-
-    // Pasa¿erowie w windzie
-    int i = 0;
-    for (auto* p : winda.vectorPasazerow) {
-        int px = baseX + 5 + (i % 4) * 10;
-        int py = wy + 5 + (i / 4) * 10;
-        g.FillRectangle(&pasazerBrush, px, py, 8, 8);
-        i++;
-    }
-
-    // Piêtra i pasa¿erowie czekaj¹cy
-    Pen pen(Color(0, 0, 0));
-    int panelX = baseX + 100; // po prawej od windy
-    int personSize = 8;
-
+    // Rysowanie piêter od 0 do 4
     for (int f = 0; f < 5; ++f) {
-        int fy = baseY - f * floorHeight;
+        int fy = marginY - f * wysokoscPietro;
 
-        // piêtro linia
-        g.DrawLine(&pen, baseX, fy, panelX + 160, fy);
+        // Linia pozioma piêtra
+        g.DrawLine(&pen, marginX, fy, dojechaliX + 100, fy);
 
-        // tekst piêtra
+        // Nazwa piêtra w lewym górnym rogu piêtra
         wstring pietroText = L"Pietro " + to_wstring(f);
-        g.DrawString(pietroText.c_str(), -1, &font, PointF(panelX, fy - 15), &textBrush);
+        g.DrawString(pietroText.c_str(), -1, &font, PointF(marginX, fy - wysokoscPietro + 5), &tekstBrush);
 
-        // pasa¿erowie czekaj¹cy
+        // Pasa¿erowie czekaj¹cy
         int count = 0;
         for (const Pasazer& p : pasazerowie) {
             if (p.stan == czeka && p.pietroStart == f) {
-                int px = panelX + (count % 4) * (personSize + 2);
-                int py = fy - height + (count / 4) * (personSize + 2);
-                g.FillRectangle(&waitingBrush, px, py, personSize, personSize);
+                int px = czekajacyX + (count % 8) * (szerokoscPasazer + 2);
+                int py = fy - wysokoscPasazer - 5 - (count / 8) * (wysokoscPasazer + 2);
+                g.FillRectangle(&czekaBrush, px, py, szerokoscPasazer, wysokoscPasazer);
+                count++;
+            }
+        }
+
+        // Pasa¿erowie, którzy dojechali
+        count = 0;
+        for (const Pasazer& p : pasazerowie) {
+            if (p.stan == dojechal && p.pietroKoniec == f) {
+                int px = dojechaliX + (count % 8) * (szerokoscPasazer + 2);
+                int py = fy - wysokoscPasazer - 5 - (count / 8) * (wysokoscPasazer + 2);
+                g.FillRectangle(&dojechalBrush, px, py, szerokoscPasazer, wysokoscPasazer);
                 count++;
             }
         }
     }
+
+    // Winda – rysowana raz
+    int wy = marginY - ((winda.pietro + 1) * wysokoscPietro);
+    g.FillRectangle(&windaBrush, windaX, wy, szerokoscWindy, wysokoscWindy);
+
+    // Pasa¿erowie w windzie
+    int i = 0;
+    for (auto* p : winda.vectorPasazerow) {
+        int px = windaX + 5 + (i % 8) * (szerokoscPasazer + 2);
+        int py = wy + wysokoscWindy - wysokoscPasazer - 5 - (i / 8) * (wysokoscPasazer + 2);
+        g.FillRectangle(&pasazerBrush, px, py, szerokoscPasazer, wysokoscPasazer);
+        i++;
+    }
 }
+
 
 
 
@@ -81,19 +104,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_CREATE:
-        SetTimer(hWnd, 1, 1000, NULL);
+        SetTimer(hWnd, 1, 500, NULL);
 
-        for (int floor = 0; floor < 5; ++floor) {
+        for (int start = 0; start < 5; ++start) {
             for (int cel = 0; cel < 5; ++cel) {
-                if (cel == floor) continue;
+                if (cel == start) continue;
                 wchar_t label[16];
                 swprintf(label, 16, L"Do %d", cel);
-                int btnId = BUTTON_ID_BASE + floor * 10 + cel;
+                int btnId = BUTTON_ID_BASE + start * 10 + cel;
 
                 CreateWindow(L"BUTTON", label,
                     WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                    180 + cel * 45, // x
-                    400 - floor * 60, // y
+                    500+cel * 45, // x
+                    300 - start * 50 -30, // y
                     40, 20, hWnd, (HMENU)btnId, NULL, NULL);
             }
         }
@@ -105,7 +128,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         if (btnId >= BUTTON_ID_BASE && btnId < BUTTON_ID_BASE + 500) {
             int floor = (btnId - BUTTON_ID_BASE) / 10;
             int cel = (btnId - BUTTON_ID_BASE) % 10;
-            pasazerowie.push_back(Pasazer(floor, cel));
+            //if (!((/*floor==winda.pietro - 1||*/ floor == winda.pietro + 1 || floor == winda.pietro) && winda.kierunek==gora)){
+                //if (!((floor == winda.pietro - 1 /*|| floor == winda.pietro + 1*/ || floor == winda.pietro) && winda.kierunek == dol)) {
+                     pasazerowie.push_back(Pasazer(floor, cel));
+                //}
+
+            //}
             InvalidateRect(hWnd, NULL, FALSE);
         }
         return 0;
@@ -157,8 +185,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
     wc.lpszClassName = L"SymulacjaWindy";
 
     RegisterClass(&wc);
-    HWND hWnd = CreateWindowEx(0, L"SymulacjaWindy", L"Symulator Windy", WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 500, 500, NULL, NULL, hInstance, NULL);
+    HWND hWnd = CreateWindowEx(WS_EX_COMPOSITED, L"SymulacjaWindy", L"Symulator Windy", WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 800, 400, NULL, NULL, hInstance, NULL);
 
     ShowWindow(hWnd, nCmdShow);
 

@@ -2,6 +2,8 @@
 #include <iostream>
 #include<set>
 #include<vector>
+#include <chrono>
+using namespace std::chrono;
 using namespace std;
 
 enum Kierunek
@@ -13,6 +15,10 @@ enum Stan
 {
     spawn, czeka, jedzie, dojechal
 };
+
+time_point<steady_clock> czasZatrzymania;
+bool odliczanieAktywne = false;
+bool zjazdNaParter = false;
 
 class Pasazer {
 public:
@@ -51,7 +57,7 @@ public:
     }
 
     void wezwij(Pasazer& pasazer) {
-        
+
         if (pasazer.stan == spawn) {
             if (pasazer.kierunek == gora) {
                 kolejkaGora.insert(pasazer.pietroStart);
@@ -89,7 +95,7 @@ public:
 
     void odstaw() {
         for (auto it = vectorPasazerow.begin(); it != vectorPasazerow.end(); ) {
-            if ((*it)->pietroKoniec == pietro && (*it)->stan==jedzie) {
+            if ((*it)->pietroKoniec == pietro && (*it)->stan == jedzie) {
                 (*it)->stan = dojechal;
                 it = vectorPasazerow.erase(it);
                 //animacja it
@@ -122,10 +128,10 @@ public:
                 kierunek = dol;
                 ruchPierwszaKolej();
             }
-            else if (vectorPasazerow.empty() && pietro != 0) {
-                kierunek = dol;
-                pietro--; // powrót na parter
-            }
+            //else if (vectorPasazerow.empty() && pietro != 0) {
+            //    kierunek = dol;
+            //    pietro--; // powrót na parter
+            //}
         }
     }
 
@@ -165,7 +171,46 @@ public:
             }
         }
         kierunek = stop;
-        //odpalamy czas 5 sekund a potem zjazd na p0
+        // Jeœli winda pusta i nie ma nikogo do obs³ugi
+        if (vectorPasazerow.empty() && kolejkaGora.empty() && kolejkaDol.empty()) {
+            if (!odliczanieAktywne) {
+                czasZatrzymania = steady_clock::now();
+                odliczanieAktywne = true;
+                return;
+            }
+
+            auto teraz = steady_clock::now();
+            auto uplynelo = duration_cast<seconds>(teraz - czasZatrzymania).count();
+            if (uplynelo >= 5 && pietro != 0) {
+                zjazdNaParter = true;
+                kierunek = dol;
+            }
+        }
+
+        // Obs³uga zjazdu na parter
+        if (zjazdNaParter) {
+            if (!vectorPasazerow.empty() || !kolejkaGora.empty() || !kolejkaDol.empty()) {
+                odliczanieAktywne = false;
+                zjazdNaParter = false;
+            }
+            if (pietro > 0) {
+                pietro--;
+                return;
+            }
+            else {
+                // Dotar³a na parter
+                zjazdNaParter = false;
+                odliczanieAktywne = false;
+                kierunek = stop;
+                return;
+            }
+        }
+
+        // Je¿eli przerwano stan oczekiwania (np. wezwano windê), resetuj zegar
+        if (!vectorPasazerow.empty() || !kolejkaGora.empty() || !kolejkaDol.empty()) {
+            odliczanieAktywne = false;
+            zjazdNaParter = false;
+        }
     }
 
 };
