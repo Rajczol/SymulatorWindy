@@ -29,8 +29,6 @@ void DrawWinda(Graphics& g)
     Pen pen(Color(0, 0, 0));
 
     // Rozmiary
-
-
     int marginY = 300; // piêtro 0
     int wysokoscPietro = 50;
     int szerokoscWindy = 125;
@@ -42,24 +40,22 @@ void DrawWinda(Graphics& g)
     int windaX = czekajacyX + 100;
     int dojechaliX = windaX + szerokoscWindy + 30;
  
-    
 
     // Waga
     wstring wagaStr = L"Waga: " + to_wstring(winda.waga) + L" kg";
     g.DrawString(wagaStr.c_str(), -1, &font, PointF(marginX, 10), &tekstBrush);
 
-    // Rysowanie piêter od 0 do 4
     for (int f = 0; f < 5; ++f) {
         int fy = marginY - f * wysokoscPietro;
 
-        // Linia pozioma piêtra
+        // Linia pozioma pietra
         g.DrawLine(&pen, marginX, fy, dojechaliX + 100, fy);
 
-        // Nazwa piêtra w lewym górnym rogu piêtra
+        // Nazwa pietra
         wstring pietroText = L"Pietro " + to_wstring(f);
         g.DrawString(pietroText.c_str(), -1, &font, PointF(marginX, fy - wysokoscPietro + 5), &tekstBrush);
 
-        // Pasa¿erowie czekaj¹cy
+        // Pasazerowie - czeka
         int count = 0;
         for (const Pasazer& p : pasazerowie) {
             if (p.stan == czeka && p.pietroStart == f) {
@@ -70,7 +66,7 @@ void DrawWinda(Graphics& g)
             }
         }
 
-        // Pasa¿erowie, którzy dojechali
+        // Pasazerowie - dojechali
         count = 0;
         for (const Pasazer& p : pasazerowie) {
             if (p.stan == dojechal && p.pietroKoniec == f) {
@@ -82,14 +78,14 @@ void DrawWinda(Graphics& g)
         }
     }
 
-    // Winda – rysowana raz
+    // Winda
     int wy = marginY - ((winda.pietro + 1) * wysokoscPietro);
     g.FillRectangle(&windaBrush, windaX, wy, szerokoscWindy, wysokoscWindy);
 
-    // Pasa¿erowie w windzie
+    // Pasazerowie - jedzie
     int i = 0;
     for (auto* p : winda.vectorPasazerow) {
-        int px = windaX + 5 + (i % 8) * (szerokoscPasazer + 2);
+        int px = windaX + 5 + (i % 8) * (szerokoscPasazer + 5);
         int py = wy + wysokoscWindy - wysokoscPasazer - 5 - (i / 8) * (wysokoscPasazer + 2);
         g.FillRectangle(&pasazerBrush, px, py, szerokoscPasazer, wysokoscPasazer);
         i++;

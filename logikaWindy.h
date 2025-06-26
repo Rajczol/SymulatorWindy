@@ -39,7 +39,6 @@ public:
     vector<Pasazer*> vectorPasazerow;
     int liczbaPasazerow;
     int waga;
-    //mozliwa poprawka wagi
     int pierwszaKolej;
     set<int> kolejkaGora;
     set<int, greater<int>> kolejkaDol;
@@ -72,11 +71,10 @@ public:
     }
 
 
-    //odnbieramy tylko jak vector.size()<8
+ 
     void odbierz(Pasazer& pasazer) {
         if (vectorPasazerow.size() >= 8) return;
         if (pietro == pasazer.pietroStart && pasazer.stan == czeka && kierunek == pasazer.kierunek) {
-            //winda open animacja
             pasazer.stan = jedzie;
             vectorPasazerow.push_back(&pasazer);
             if (pasazer.kierunek == gora) {
@@ -87,8 +85,6 @@ public:
             }
             cele[pasazer.pietroKoniec] = true;
             aktualizacjaWagi();
-            //animacja pasazer idzie do pola okreslonego indeksem wektora
-            //zamykamy winde
             return;
         }
     }
@@ -98,7 +94,6 @@ public:
             if ((*it)->pietroKoniec == pietro && (*it)->stan == jedzie) {
                 (*it)->stan = dojechal;
                 it = vectorPasazerow.erase(it);
-                //animacja it
             }
             else {
                 ++it;
@@ -109,13 +104,10 @@ public:
     }
 
     void ruchPierwszaKolej() {
-        //animacja ruchu od do
-        //pietro = pierwszaKolej;
         if (pierwszaKolej == pietro) return;
         pietro < pierwszaKolej ? pietro++ : pietro--;
     }
 
-    //test
     void pierwszyRuchJeœliPotrzeba() {
         if (kierunek == stop) {
             if (!kolejkaGora.empty()) {
@@ -128,10 +120,6 @@ public:
                 kierunek = dol;
                 ruchPierwszaKolej();
             }
-            //else if (vectorPasazerow.empty() && pietro != 0) {
-            //    kierunek = dol;
-            //    pietro--; // powrót na parter
-            //}
         }
     }
 
@@ -141,14 +129,12 @@ public:
         if (kierunek == gora) {
             for (int i = pietro; i < 5; i++) {
                 if (cele[i] == true) {
-                    //animacja
                     pietro++;
                     return;
                 }
             }
             for (int kolejka : kolejkaGora) {
                 if (kolejka > pietro) {
-                    //animacja
                     pietro++;
                     return;
                 }
@@ -157,21 +143,18 @@ public:
         if (kierunek == dol) {
             for (int i = pietro; i >= 0; i--) {
                 if (cele[i] == true) {
-                    //animacja
                     pietro--;
                     return;
                 }
             }
             for (int kolejka : kolejkaDol) {
                 if (kolejka < pietro) {
-                    //animacja
                     pietro--;
                     return;
                 }
             }
         }
         kierunek = stop;
-        // Jeœli winda pusta i nie ma nikogo do obs³ugi
         if (vectorPasazerow.empty() && kolejkaGora.empty() && kolejkaDol.empty()) {
             if (!odliczanieAktywne) {
                 czasZatrzymania = steady_clock::now();
@@ -186,30 +169,21 @@ public:
                 kierunek = dol;
             }
         }
-
-        // Obs³uga zjazdu na parter
+        if (!vectorPasazerow.empty() || !kolejkaGora.empty() || !kolejkaDol.empty()) {
+            odliczanieAktywne = false;
+            zjazdNaParter = false;
+        }
         if (zjazdNaParter) {
-            if (!vectorPasazerow.empty() || !kolejkaGora.empty() || !kolejkaDol.empty()) {
-                odliczanieAktywne = false;
-                zjazdNaParter = false;
-            }
             if (pietro > 0) {
                 pietro--;
                 return;
             }
             else {
-                // Dotar³a na parter
                 zjazdNaParter = false;
                 odliczanieAktywne = false;
                 kierunek = stop;
                 return;
             }
-        }
-
-        // Je¿eli przerwano stan oczekiwania (np. wezwano windê), resetuj zegar
-        if (!vectorPasazerow.empty() || !kolejkaGora.empty() || !kolejkaDol.empty()) {
-            odliczanieAktywne = false;
-            zjazdNaParter = false;
         }
     }
 
