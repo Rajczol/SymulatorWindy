@@ -125,7 +125,6 @@ public:
     }
 
     void ruch() {
-
         if (kierunek == gora) {
             for (int i = pietro; i < 5; i++) {
                 if (cele[i] == true) {
