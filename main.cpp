@@ -13,6 +13,8 @@ using namespace std;
 
 Winda winda;
 vector<Pasazer> pasazerowie;
+vector<Pasazer> pasazerowieDoDodania;
+int flipflop=0;
 
 
 
@@ -100,7 +102,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_CREATE:
-        SetTimer(hWnd, 1, 500, NULL);
+        SetTimer(hWnd, 1, 250, NULL);
 
         for (int start = 0; start < 5; ++start) {
             for (int cel = 0; cel < 5; ++cel) {
@@ -124,22 +126,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         if (btnId >= BUTTON_ID_BASE && btnId < BUTTON_ID_BASE + 500) {
             int floor = (btnId - BUTTON_ID_BASE) / 10;
             int cel = (btnId - BUTTON_ID_BASE) % 10;
-            //if (!((/*floor==winda.pietro - 1||*/ floor == winda.pietro + 1 || floor == winda.pietro) && winda.kierunek==gora)){
-                //if (!((floor == winda.pietro - 1 /*|| floor == winda.pietro + 1*/ || floor == winda.pietro) && winda.kierunek == dol)) {
-                     pasazerowie.push_back(Pasazer(floor, cel));
-                //}
+            pasazerowieDoDodania.push_back(Pasazer(floor, cel));
 
-            //}
+            ////if (!((/*floor==winda.pietro - 1||*/ floor == winda.pietro + 1 || floor == winda.pietro) && winda.kierunek==gora)){
+            //    //if (!((floor == winda.pietro - 1 /*|| floor == winda.pietro + 1*/ || floor == winda.pietro) && winda.kierunek == dol)) {
+            //         pasazerowie.push_back(Pasazer(floor, cel));
+            //    //}
+
+            ////}
             InvalidateRect(hWnd, NULL, FALSE);
         }
         return 0;
     }
 
     case WM_TIMER:
+        for (auto& p : pasazerowieDoDodania) {
+            pasazerowie.push_back(p);
+        }
+        pasazerowieDoDodania.clear();
         for (Pasazer& p : pasazerowie) winda.wezwij(p);
         for (Pasazer& p : pasazerowie) winda.odbierz(p);
         winda.ruch();
         winda.odstaw();
+        
         winda.pierwszyRuchJeœliPotrzeba();
         InvalidateRect(hWnd, NULL, FALSE);
         return 0;

@@ -75,7 +75,7 @@ public:
     void odbierz(Pasazer& pasazer) {
         if (vectorPasazerow.size() >= 8) return;
         if (pietro == pasazer.pietroStart && pasazer.stan == czeka && kierunek == pasazer.kierunek) {
-            pasazer.stan = jedzie;
+            pasazer.stan = jedzie;  
             vectorPasazerow.push_back(&pasazer);
             if (pasazer.kierunek == gora) {
                 kolejkaGora.erase(pasazer.pietroStart);
@@ -83,7 +83,8 @@ public:
             if (pasazer.kierunek == dol) {
                 kolejkaDol.erase(pasazer.pietroStart);
             }
-            cele[pasazer.pietroKoniec] = true;
+            if (pasazer.stan == jedzie)
+                cele[pasazer.pietroKoniec] = true;
             aktualizacjaWagi();
             return;
         }
@@ -125,16 +126,9 @@ public:
 
     void ruch() {
 
-
         if (kierunek == gora) {
             for (int i = pietro; i < 5; i++) {
                 if (cele[i] == true) {
-                    pietro++;
-                    return;
-                }
-            }
-            for (int kolejka : kolejkaGora) {
-                if (kolejka > pietro) {
                     pietro++;
                     return;
                 }
@@ -147,6 +141,16 @@ public:
                     return;
                 }
             }
+        }
+        if (kierunek == gora) {
+            for (int kolejka : kolejkaGora) {
+                if (kolejka > pietro) {
+                    pietro++;
+                    return;
+                }
+            }
+        }
+        if (kierunek == dol) {
             for (int kolejka : kolejkaDol) {
                 if (kolejka < pietro) {
                     pietro--;
