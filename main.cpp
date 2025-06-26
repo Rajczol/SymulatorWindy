@@ -16,7 +16,6 @@ vector<Pasazer> pasazerowieDoDodania;
 int flipflop=0;
 
 
-
 void DrawWinda(Graphics& g)
 {
     SolidBrush windaBrush(Color(128, 128, 128));
